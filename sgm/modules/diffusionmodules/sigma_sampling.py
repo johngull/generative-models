@@ -13,6 +13,19 @@ class EDMSampling:
         return log_sigma.exp()
 
 
+class EDMUniformSampling:
+    def __init__(self, sigma_min=0.002, sigma_max=80.0, rho=7.0):
+        self.rho = rho
+        min_inv_rho = sigma_min ** (1 / rho)
+        self.max_inv_rho = sigma_max ** (1 / rho)
+        self.d_inv_rho = min_inv_rho - self.max_inv_rho
+
+    def __call__(self, n_samples, rand=None):
+        r = default(rand, torch.rand((n_samples,)))
+        sigmas = (self.max_inv_rho + r * self.d_inv_rho) ** self.rho
+        return sigmas
+
+
 class DiscreteSampling:
     def __init__(self, discretization_config, num_idx, do_append_zero=False, flip=True):
         self.num_idx = num_idx
